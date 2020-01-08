@@ -42,9 +42,13 @@ antlrcpp::Any EvalVisitor::visitSimple_stmt(Python3Parser::Simple_stmtContext *c
     return visit(ctx->small_stmt());
 }
 antlrcpp::Any EvalVisitor::visitSmall_stmt(Python3Parser::Small_stmtContext *ctx) {
-    if (ctx->expr_stmt()) visit(ctx->expr_stmt());
-    visit(ctx->flow_stmt());
-    return Object(ATOMS);
+//    auto x = ctx->expr_stmt();
+    if (ctx->expr_stmt() != nullptr) {
+//        cout << ctx->expr_stmt() << endl;
+        return visit(ctx->expr_stmt());
+    } else if (ctx->flow_stmt())
+        return visit(ctx->flow_stmt());
+//    return Object(ATOMS);
 }
 antlrcpp::Any EvalVisitor::visitExpr_stmt(Python3Parser::Expr_stmtContext *ctx) {
     auto testlists = ctx->testlist();
