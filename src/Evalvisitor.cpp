@@ -289,7 +289,7 @@ antlrcpp::Any EvalVisitor::visitAtom(Python3Parser::AtomContext *ctx) {
             return GetVar(name)-> second;
         return name;
     }
-        if (ctx->STRING(0)) {
+    if (ctx->STRING(0)) {
         string cur;
         auto strings = ctx->STRING();
         for (auto itm: strings) {
@@ -316,6 +316,7 @@ antlrcpp::Any EvalVisitor::visitArglist(Python3Parser::ArglistContext *ctx) {
     List cur;
     for (auto & argument : arguments)
     cur.push_back(visit(argument).as<Object>());
+    if (cur.size()==1 && cur[0].type_py == LIST) return cur[0];
     return  Object(cur);
 }
 antlrcpp::Any EvalVisitor::visitArgument(Python3Parser::ArgumentContext *ctx) {
