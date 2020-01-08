@@ -15,7 +15,12 @@ set(src_dir
         ${PROJECT_SOURCE_DIR}/generated/Python3Parser.cpp
         ${PROJECT_SOURCE_DIR}/generated/Python3Listener.cpp
         ${PROJECT_SOURCE_DIR}/generated/Python3BaseListener.cpp
-        src/BitInt.cpp)
+        src/BitInt.h
+        src/BitInt.cpp
+        src/Object.h
+        src/Evalvisitor.h
+        src/Evalvisitor.cpp
+        )
 file(GLOB antlr4-cpp-src
         ${PROJECT_SOURCE_DIR}/third_party/runtime/src/*.cpp
         ${PROJECT_SOURCE_DIR}/third_party/runtime/src/atn/*.cpp
@@ -26,11 +31,11 @@ file(GLOB antlr4-cpp-src
         ${PROJECT_SOURCE_DIR}/third_party/runtime/src/tree/pattern/*.cpp
         ${PROJECT_SOURCE_DIR}/third_party/runtime/src/tree/xpath/*.cpp
         )
-file(GLOB src_executable
-        ${PROJECT_SOURCE_DIR}/src/*.cpp
-        )
-add_library (antlr4-cpp-runtime ${antlr4-cpp-src} src/)
+#file(GLOB src_executable
+#        ${PROJECT_SOURCE_DIR}/src/*.cpp
+#        )
+add_library (antlr4-cpp-runtime ${antlr4-cpp-src})
 #add_executable(python_interpreter ${src_dir} ${src_executable})
 add_executable(code ${src_dir} ${src_executable} src/main.cpp)
-target_link_libraries(code antlr4-cpp-runtime)
-#add_executable(code ${src_dir} src/main.cpp)
+target_link_libraries(PythonInterpreter antlr4-cpp-runtime)
+#add_executable(PythonInterpreter ${src_dir} src/main.cpp)
