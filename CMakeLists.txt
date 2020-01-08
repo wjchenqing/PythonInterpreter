@@ -29,8 +29,8 @@ file(GLOB antlr4-cpp-src
 file(GLOB src_executable
         ${PROJECT_SOURCE_DIR}/src/*.cpp
         )
-add_library (antlr4-cpp-runtime ${antlr4-cpp-src} src/BitInt.cpp)
+add_library (antlr4-cpp-runtime ${antlr4-cpp-src} src/)
 #add_executable(python_interpreter ${src_dir} ${src_executable})
-add_executable(code ${src_dir} ${src_executable} src/BitInt.cpp)
+add_executable(code ${src_dir} ${src_executable} src/main.cpp)
 target_link_libraries(code antlr4-cpp-runtime)
 #add_executable(code ${src_dir} src/main.cpp)
