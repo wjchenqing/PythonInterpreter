@@ -45,7 +45,8 @@ BigInt operator+(const BigInt &a, const BigInt &b) {
     int tmp = 0;
     BigInt ans;
     ans.sgn = a.sgn;
-    ans.val.resize(a.val.size() + 10);
+    unsigned long max_size = max(a.val.size(), b.val.size());
+    ans.val.resize(max_size + 10);
     for (int i = 0; i < min_len; ++i) {
         tmp += a.val[i] + b.val[i];
         ans.val[i] = tmp % 10;
@@ -63,7 +64,7 @@ BigInt operator+(const BigInt &a, const BigInt &b) {
             ans.val[i] = tmp % 10;
             tmp /= 10;
         }
-    if (tmp == 1)  ans.val.push_back(1);
+    if (tmp == 1)  ans.val[max_size] = 1;
 
     while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
     if (ans.val.empty()) ans.val.push_back(0);
@@ -214,10 +215,12 @@ bool larger(BigInt& a, const BigInt& b, unsigned long dif) {
 }
 BigInt operator/(const BigInt &a, const BigInt &b) {
     BigInt cur = a;
-    long long s_a = a.val.size(), s_b = b.val.size();
-    long long dif = s_a - s_b;
+    long long a_size = a.val.size(), b_size = b.val.size();
+    long long dif = a_size - b_size;
     cur.val.push_back(0);
-    if (a == 0 || dif < 0) return 0;
+    if (a == 0) return 0;
+    if (dif < 0)
+        return a.sgn == b.sgn ? 0 : -1;
     BigInt ans;
     ans.sgn = a.sgn == b.sgn;
     ans.val.resize(dif + 10);
@@ -238,7 +241,12 @@ BigInt operator/(const BigInt &a, const BigInt &b) {
     }
     while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
     if (ans.val.empty()) ans = 0;
-    return ans;
+    while (!cur.val.empty() && cur.val.back() == 0) cur.val.pop_back();
+    if (cur.val.empty()) cur = 0;
+    if (a.sgn != b.sgn && cur != 0)
+        return ans - 1;
+    else
+        return ans;
 }
 BigInt& BigInt::operator/=(const BigInt &b) {
     *this = *this / b;
@@ -280,4 +288,7 @@ double BigInt::ToDouble() const {
     }
     if (!sgn) tmp *= -1;
     return tmp;
+}
+
+BigInt::~BigInt() {
 }

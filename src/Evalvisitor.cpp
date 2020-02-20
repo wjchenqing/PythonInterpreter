@@ -239,7 +239,8 @@ antlrcpp::Any EvalVisitor::visitMuldiv_op(Python3Parser::Muldiv_opContext *ctx) 
 antlrcpp::Any EvalVisitor::visitFactor(Python3Parser::FactorContext *ctx) {
     if (ctx->atom_expr()) return visit(ctx->atom_expr());
     if (ctx->addsub_op()->ADD()) return visit(ctx->factor());
-    return -visit(ctx->factor()).as<Object>();
+    auto tmp = visit(ctx->factor()).as<Object>();
+    return -tmp;
 }
 antlrcpp::Any EvalVisitor::visitAtom_expr(Python3Parser::Atom_exprContext *ctx) {
     if (ctx->trailer() == nullptr) return visit(ctx->atom());
