@@ -59,7 +59,7 @@ antlrcpp::Any EvalVisitor::visitExpr_stmt(Python3Parser::Expr_stmtContext *ctx) 
         for (int i = 0; i < testlists.size() - 1; ++i)
             for (int j = 0; j < cur.size(); ++j )
                 Assign_Var(testlists[i]->test()[j]->or_test()->and_test()[0]->not_test()[0]->comparison()->arith_expr()[0]->term()[0]->factor()[0]->atom_expr()->atom()->NAME()->toString(), cur[j]);
-        return cur;
+        return tmp;
     }
     Object name(testlists[0]->test()[0]->or_test()->and_test()[0]->not_test()[0]->comparison()->arith_expr()[0]->term()[0]->factor()[0]->atom_expr()->atom()->NAME()->toString());
     auto sign = ctx->augassign();

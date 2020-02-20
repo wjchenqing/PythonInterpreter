@@ -92,6 +92,7 @@ BigInt operator-(const BigInt &a, const BigInt &b) {
     }
     if (tmp == 0) {
         ans.sgn = true;
+        while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
         return ans;
     } else {
 //        ans.sgn = false;
