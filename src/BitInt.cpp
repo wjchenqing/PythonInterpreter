@@ -73,43 +73,76 @@ BigInt operator+(const BigInt &a, const BigInt &b) {
 BigInt operator-(const BigInt &a, const BigInt &b) {
     if (a.sgn != b.sgn) return a + (-b);
     if (a.sgn == 0) return -((-a) - (-b));
-    unsigned long min_len = min (a.val.size(), b.val.size());
-    int tmp = 0;
+
     BigInt ans;
-    ans.val.resize(a.val.size() + 10);
-    for (unsigned long i = 0; i < min_len; ++i) {
-        tmp += a.val[i] - b.val[i] + 10;
-        ans.val[i] = tmp % 10;
-        tmp = tmp / 10 - 1;
+    unsigned long max_size = max(a.val.size(), b.val.size());
+    ans.val.resize(max_size);
+    int tmp = 0;
+    for (unsigned long i = 0; i < max_size; ++i) {
+        int _a = i < a.val.size() ? a.val[i] : 0;
+        int _b = i < b.val.size() ? b.val[i] : 0;
+        int x = _a - _b - tmp;
+        if (x < 0) {
+            x += 10;
+            tmp = 1;
+        } else
+            tmp = 0;
+        ans.val[i] = x;
     }
-    if (a.val.size() > b.val.size())
-        for (unsigned long i = min_len; i < a.val.size(); ++i) {
-            tmp += a.val[i] + 10;
-            ans.val[i] = tmp % 10;
-            tmp = tmp / 10 - 1;
-        }
-    if (a.val.size() < b.val.size())
-        for (unsigned long i = min_len; i < a.val.size(); ++i) {
-            tmp += - b.val[i] + 10;
-            ans.val[i] = tmp % 10;
-            tmp = tmp / 10 - 1;
-        }
-    ans.sgn = tmp != -1;
-    while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
-    if (ans.val.empty()) ans.val.push_back(0);
-    return ans;
+    if (tmp == 0) {
+        ans.sgn = true;
+        return ans;
+    } else {
+//        ans.sgn = false;
+        BigInt A;
+        A.val.resize(max_size + 1);
+        A.val[max_size] = 1;
+        A.sgn = true;
+        ans.sgn = true;
+        ans = -(A - ans);
+        while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
+        if (ans.val.empty()) ans.val.push_back(0);
+        return ans;
+    }
+
+//    unsigned long min_len = min (a.val.size(), b.val.size());
+//    int tmp = 0;
+//    BigInt ans;
+//    ans.val.resize(a.val.size() + 10);
+//    for (unsigned long i = 0; i < min_len; ++i) {
+//        tmp += a.val[i] - b.val[i] + 10;
+//        ans.val[i] = tmp % 10;
+//        tmp = tmp / 10 - 1;
+//    }
+//    if (a.val.size() > b.val.size())
+//        for (unsigned long i = min_len; i < a.val.size(); ++i) {
+//            tmp += a.val[i] + 10;
+//            ans.val[i] = tmp % 10;
+//            tmp = tmp / 10 - 1;
+//        }
+//    if (a.val.size() < b.val.size())
+//        for (unsigned long i = min_len; i < a.val.size(); ++i) {
+//            tmp += - b.val[i] + 10;
+//            ans.val[i] = tmp % 10;
+//            tmp = tmp / 10 - 1;
+//        }
+//    ans.sgn = tmp != -1;
+//    while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
+//    if (ans.val.empty()) ans.val.push_back(0);
+//    return ans;
 }
 bool operator>(const BigInt &a, const BigInt &b) {
     return (a-b).sgn;
 }
 bool operator<(const BigInt &a, const BigInt &b) {
-    return (b-a).sgn;
+    BigInt tmp = b - a;
+    return (tmp.sgn && (tmp.val.size()!=1 || tmp.val[0]!=0));
 }
 bool operator>=(const BigInt &a, const BigInt &b) {
-    return !(b-a).sgn;
+    return !(a<b);
 }
 bool operator<=(const BigInt &a, const BigInt &b) {
-    return !(a-b).sgn;
+    return !(a>b);
 }
 bool operator==(const BigInt &a, const BigInt &b) {
     return !(a > b) && !(a < b);

@@ -95,11 +95,13 @@ public:
     Object operator>(const Object &b) const {
         if(type_py == STRING && b.type_py == STRING)
         {
-            return Object(toSTRING() < b.toSTRING());
+            return Object(toSTRING() > b.toSTRING());
         }
         if(type_py != STRING && b.type_py != STRING)
         {
-            return Object(toFLOAT() < b.toFLOAT());
+            double _a = (*this).toFLOAT();
+            double _b = b.toFLOAT();
+            return Object(_a > _b);
         }
         return Object(type_py == STRING);
     }
@@ -119,12 +121,17 @@ public:
         return !(*this == b);
     }
     Object operator+(const Object &b) const {
-        if (type_py == b.type_py)
-            switch (type_py){
-                case INT: return Object(toINT() + b.toINT());
-                case FLOAT: return Object(toFLOAT() + b.toFLOAT());
-                case STRING: return Object(toSTRING() + b.toSTRING());
+        if (type_py == b.type_py) {
+            auto res = toINT() + b.toINT();
+            switch (type_py) {
+                case INT:
+                    return Object(toINT() + b.toINT());
+                case FLOAT:
+                    return Object(toFLOAT() + b.toFLOAT());
+                case STRING:
+                    return Object(toSTRING() + b.toSTRING());
                 default:;
+            }
         }
         return Object(NONE);
     }
@@ -142,7 +149,7 @@ public:
         if (type_py == FLOAT)
             return Object((double)0) - *this;
     }
-    Object operator*(const Object &b) const {
+    Object operator*(const Object &b) const{
         if (type_py == b.type_py)
             switch(type_py) {
                 case INT:
@@ -153,7 +160,8 @@ public:
             }
         if (type_py == STRING && (b.type_py == INT || b.type_py == BOOL)) {
             Object tmp(*this);
-            for(BigInt i; i < b.toINT(); ++i)
+            auto num = b.toINT();
+            for(BigInt i = 1; i < num; ++i)
                 tmp += *this;
             return tmp;
         }
@@ -175,7 +183,8 @@ public:
             return toINT() % b.toINT();
     }
     Object operator+= (const Object &b) {
-        return *this = (*this + b);
+        *this = *this + b;
+        return *this;
     }
     Object operator-= (const Object &b) {
         return *this = (*this - b);
@@ -189,8 +198,6 @@ public:
     Object operator%= (const Object &b) {
         return *this = (*this % b);
     }
-
-
 };
 
 

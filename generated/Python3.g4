@@ -10,11 +10,9 @@ tokens { INDENT, DEDENT }
  private: int opened = 0;
      // The most recently produced token.
  private: antlr4::Token* lastToken = nullptr;
-
  public: void emit(std::unique_ptr<antlr4::Token> t) override {
        token.release();
        token=std::move(t);
-
        tokens.push_back(token.get());
  //      std::cout<<t->toString()<<std::endl;
      }
@@ -137,7 +135,7 @@ arith_expr: term (addsub_op term)*;
 addsub_op: '+'|'-';
 term: factor (muldiv_op factor)*;
 muldiv_op: '*'|'/'|'//'|'%';
-factor: ('+'|'-') factor | atom_expr;
+factor: addsub_op factor | atom_expr;
 atom_expr: atom trailer?;
 trailer: '(' (arglist)? ')' ;
 atom: (NAME | NUMBER | STRING+| 'None' | 'True' | 'False' | ('(' test ')'));

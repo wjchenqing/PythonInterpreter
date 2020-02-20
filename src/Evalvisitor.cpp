@@ -58,18 +58,33 @@ antlrcpp::Any EvalVisitor::visitExpr_stmt(Python3Parser::Expr_stmtContext *ctx) 
         auto &cur = tmp.list_py;
         for (int i = 0; i < testlists.size() - 1; ++i)
             for (int j = 0; j < cur.size(); ++j )
-                Assign_Var(testlists[i]->test()[j]->or_test()->and_test()[0]->not_test()[0]->comparison()->arith_expr()[0]->term()[0]->factor()[0]->atom_expr()->atom()->NAME()->toString(), cur);
+                Assign_Var(testlists[i]->test()[j]->or_test()->and_test()[0]->not_test()[0]->comparison()->arith_expr()[0]->term()[0]->factor()[0]->atom_expr()->atom()->NAME()->toString(), cur[j]);
         return cur;
     }
     Object name(testlists[0]->test()[0]->or_test()->and_test()[0]->not_test()[0]->comparison()->arith_expr()[0]->term()[0]->factor()[0]->atom_expr()->atom()->NAME()->toString());
     auto sign = ctx->augassign();
-    Object former = GetVar(name)->second;
+    Object& former = GetVar(name)->second;
     Object latter = visit(testlists[1]).as<Object>().list_py[0];
-    if (sign->ADD_ASSIGN()) return former += latter;
-    if (sign->SUB_ASSIGN()) return former -= latter;
-    if (sign->MULT_ASSIGN()) return former *= latter;
-    if (sign->DIV_ASSIGN()) return former /= latter;
-    if (sign->MOD_ASSIGN()) return former %= latter;
+    if (sign->ADD_ASSIGN()) {
+        former += latter;
+        return former;
+    }
+    if (sign->SUB_ASSIGN()) {
+        former -= latter;
+        return former;
+    }
+    if (sign->MULT_ASSIGN()) {
+        former *= latter;
+        return former;
+    }
+    if (sign->DIV_ASSIGN()) {
+        former /= latter;
+        return former;
+    }
+    if (sign->MOD_ASSIGN()) {
+        former %= latter;
+        return former;
+    }
     if (sign->IDIV_ASSIGN()) return former.intdiv(latter);
 }
 antlrcpp::Any EvalVisitor::visitAugassign(Python3Parser::AugassignContext *ctx) {
@@ -156,28 +171,28 @@ antlrcpp::Any EvalVisitor::visitComparison(Python3Parser::ComparisonContext *ctx
     int num = 0;
     Object cur(true);
     Object pre = visit(arith_exprs[num]).as<Object>();
-    Object latter;
     for (auto i:comp_ops) {
         if (!cur.toBOOL()) return Object(false);
+        Object latter = visit(arith_exprs[++num]).as<Object>();
         if (i->LESS_THAN()) {
-            cur = (cur &&(pre < latter = visit(arith_exprs[++num]).as<Object>()));
+            cur = pre < latter;
             pre = latter;
             continue;
         } else if (i->GREATER_THAN()) {
-            cur = (cur && (pre > latter = visit(arith_exprs[++num]).as<Object>()));
+            cur = pre > latter;
             pre = latter;
             continue;
         } else if (i->EQUALS()) {
-            cur = (cur && (pre == latter = visit(arith_exprs[++num]).as<Object>()));
+            cur = pre == latter;
             pre = latter;
         } else if (i->LT_EQ()) {
-            cur = (cur && (pre <= latter = visit(arith_exprs[++num]).as<Object>()));
+            cur = pre <= latter;
             pre = latter;
         } else if (i->GT_EQ()) {
-            cur = (cur && (pre >= latter = visit(arith_exprs[++num]).as<Object>()));
+            cur = pre >= latter;
             pre = latter;
         } else if (i->NOT_EQ_2()) {
-            cur = (cur && (pre != latter = visit(arith_exprs[++num]).as<Object>()));
+            cur = pre != latter;
             pre = latter;
         }
     }
@@ -193,8 +208,11 @@ antlrcpp::Any EvalVisitor::visitArith_expr(Python3Parser::Arith_exprContext *ctx
     int num = 0;
     auto cur = visit(terms[num]).as<Object>();
     for (auto i:addsub_ops){
-        if (i->ADD()) cur += visit(terms[++num]).as<Object>();
-        else if (i->MINUS()) cur -= visit(terms[++num]).as<Object>();
+        auto term = visit(terms[++num]).as<Object>();
+        if (i->ADD())
+            cur += term;
+        else if (i->MINUS())
+            cur -= term;
     }
     return cur;
 }
