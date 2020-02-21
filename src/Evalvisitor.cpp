@@ -11,12 +11,15 @@ antlrcpp::Any EvalVisitor::visitFile_input(Python3Parser::File_inputContext *ctx
 }
 antlrcpp::Any EvalVisitor::visitFuncdef(Python3Parser::FuncdefContext *ctx) {
     string name = ctx->NAME()->toString();
-    Function func(visit(ctx->parameters()).as<Function::Para>(), ctx->suite());
+    auto visitresult = visit(ctx->parameters());
+    bool testresult = visitresult.is<Function::Para>();
+    auto _suite = ctx->suite();
+    Function func(visitresult.as<Function::Para>(), _suite);
     Funcs.insert({name, func});
-    return Object(NONE);
+    return Object();
 }
 antlrcpp::Any EvalVisitor::visitParameters(Python3Parser::ParametersContext *ctx) {
-    if (ctx->typedargslist())
+    if (ctx->typedargslist() != nullptr)
         return visit(ctx->typedargslist());
     return Function::Para();
 }
@@ -28,7 +31,7 @@ antlrcpp::Any EvalVisitor::visitTypedargslist(Python3Parser::TypedargslistContex
     int num2 = tests.size();
     int delta = num1- num2;
     for (int i = 0; i < num1; ++i)
-        parameter.push_back({tfpdefs[i]->toString(),
+        parameter.push_back({tfpdefs[i]->NAME()->toString(),
                              (i < delta) ? Object() : visit(tests[i - delta]).as<Object>()});
     return parameter;
 }
@@ -36,7 +39,7 @@ antlrcpp::Any EvalVisitor::visitTfpdef(Python3Parser::TfpdefContext *ctx) {
     return visitChildren(ctx);
 }
 antlrcpp::Any EvalVisitor::visitStmt(Python3Parser::StmtContext *ctx) {
-    return visitChildren(ctx);
+    return visit(ctx->children[0]);
 }
 antlrcpp::Any EvalVisitor::visitSimple_stmt(Python3Parser::Simple_stmtContext *ctx) {
     return visit(ctx->small_stmt());
@@ -91,7 +94,7 @@ antlrcpp::Any EvalVisitor::visitAugassign(Python3Parser::AugassignContext *ctx) 
     return visitChildren(ctx);
 }
 antlrcpp::Any EvalVisitor::visitFlow_stmt(Python3Parser::Flow_stmtContext *ctx) {
-    return visitChildren(ctx);
+    return visit(ctx->children[0]);
 }
 antlrcpp::Any EvalVisitor::visitBreak_stmt(Python3Parser::Break_stmtContext *ctx) {
     return Object(BREAK);
@@ -111,7 +114,7 @@ antlrcpp::Any EvalVisitor::visitReturn_stmt(Python3Parser::Return_stmtContext *c
     return cur;
 }
 antlrcpp::Any EvalVisitor::visitCompound_stmt(Python3Parser::Compound_stmtContext *ctx) {
-    return visitChildren(ctx);
+    return visit(ctx->children[0]);
 }
 antlrcpp::Any EvalVisitor::visitIf_stmt(Python3Parser::If_stmtContext *ctx) {
     auto tests = ctx->test();
@@ -267,28 +270,33 @@ antlrcpp::Any EvalVisitor::visitAtom_expr(Python3Parser::Atom_exprContext *ctx) 
     if (name == "str")
         return Object(visit(ctx->trailer()).as<Object>().list_py[0].toSTRING());
     auto tmp = Funcs.find(name);
-    if (tmp == Funcs.end()) return Object(NONE);
-    auto &function = tmp->second;
-    Ob_Map o_tmp;
-    if (ctx->trailer()->arglist()) {
-        auto arguments = ctx->trailer()->arglist()->argument();
-        int num = arguments.size();
-        for (int i = 0; i < num; ++i) {
-            if (arguments[i]->NAME() != nullptr)
-                o_tmp.insert({arguments[i]->NAME()->toString(), visit(arguments[i]->test())});
-            else
-                o_tmp.insert({function.paras[i].first, visit(arguments[i]->test())});
+    if (tmp != Funcs.end()) {
+        auto &function = tmp->second;
+        Ob_Map o_tmp;
+        std::string test = function.paras[0].first;
+        if (ctx->trailer()->arglist() != nullptr) {
+            auto arguments = ctx->trailer()->arglist()->argument();
+            int num = arguments.size();
+            for (int i = 0; i < num; ++i) {
+                if (arguments[i]->NAME() != nullptr)
+                    o_tmp.insert({arguments[i]->NAME()->toString(), visit(arguments[i]->test())});
+                else
+                    o_tmp.insert({function.paras[i].first, visit(arguments[i]->test())});
+            }
         }
-        for (auto &para: function.paras)
-            if (o_tmp.find(para.first) == o_tmp.end()) o_tmp.insert(para);
+        for (auto &para: function.paras) {
+            if (o_tmp.find(para.first) == o_tmp.end())
+                o_tmp.insert(para);
+        }
         vars.push_back(o_tmp);
-        Object cur = visit(function.suis).as<Object>();
+        auto cur = visit(function.suis).as<Object>();
         cur.flow_py = ATOMS;
         vars.pop_back();
         return cur;
     }
-
+    return Object();
 }
+
 antlrcpp::Any EvalVisitor::visitTrailer(Python3Parser::TrailerContext *ctx) {
     return visit(ctx->arglist());
 }
@@ -357,7 +365,8 @@ Object EvalVisitor::FindVar (const Object &name) {
 }
 std::unordered_map<std::string, Object>::iterator EvalVisitor::GetVar(const Object &name) {
     auto pos = Cur_Vars().find(name.toSTRING());
-    if (pos != Cur_Vars().end()) return pos;
+    if (pos != Cur_Vars().end())
+        return pos;
     return Glo_Vars().find(name.toSTRING());
 }
 Object & EvalVisitor::Insert_Var(const Object &name, const Object &value) {
@@ -368,5 +377,8 @@ Object & EvalVisitor::Assign_Var(const Object &name, const Object &value) {
     if (FindVar(name.toSTRING()).toBOOL())
         return GetVar(name)->second = value;
     return Insert_Var(name, value);
+}
+EvalVisitor::EvalVisitor(): Python3BaseVisitor() {
+      vars.emplace_back();
 }
 
