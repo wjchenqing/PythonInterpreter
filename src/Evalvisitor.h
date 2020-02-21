@@ -33,9 +33,8 @@ public:
     };
     unordered_map<string, Function> Funcs;
 
-    EvalVisitor(): Python3BaseVisitor() {
-        vars.emplace_back();
-    }
+
+    EvalVisitor();
 
 private:
     antlrcpp::Any visitFile_input(Python3Parser::File_inputContext *ctx) override;
