@@ -121,27 +121,31 @@ public:
         return !(*this == b);
     }
     Object operator+(const Object &b) const {
-        if (type_py == b.type_py) {
-            auto res = toINT() + b.toINT();
-            switch (type_py) {
-                case INT:
+        switch (type_py) {
+            case INT:
+                if (b.type_py == INT)
                     return Object(toINT() + b.toINT());
-                case FLOAT:
+                else
                     return Object(toFLOAT() + b.toFLOAT());
-                case STRING:
-                    return Object(toSTRING() + b.toSTRING());
-                default:;
-            }
-        }
-        return Object(NONE);
-    }
-    Object operator-(const Object &b) const {
-        if (type_py == b.type_py)
-            switch (type_py){
-            case INT: return Object(toINT() - b.toINT());
-            case FLOAT: return Object(toFLOAT() - b.toFLOAT());
+            case FLOAT:
+                return Object(toFLOAT() + b.toFLOAT());
+            case STRING:
+                return Object(toSTRING() + b.toSTRING());
             default:;
         }
+    }
+    Object operator-(const Object &b) const {
+
+        if (type_py == INT) {
+            switch  (b.type_py){
+                case INT:
+                    return Object(toINT() - b.toINT());
+                case FLOAT:
+                    return Object(toFLOAT() - b.toFLOAT());
+            }
+        }
+        if (type_py == FLOAT)
+            return Object(toFLOAT() - b.toFLOAT());
     }
     Object operator-() const {
         if (type_py == INT)
@@ -149,19 +153,21 @@ public:
         if (type_py == FLOAT)
             return Object((double)0) - *this;
     }
-    Object operator*(const Object &b) const{
-        if (type_py == b.type_py)
-            switch(type_py) {
-                case INT:
+    Object operator*(const Object &b) const {
+        switch (type_py) {
+            case INT:
+                if (b.type_py == INT)
                     return Object(toINT() * b.toINT());
-                case FLOAT:
+                else if (b.type_py == FLOAT)
                     return Object(toFLOAT() * b.toFLOAT());
-                default:;
-            }
+            case FLOAT:
+                return Object(toFLOAT() * b.toFLOAT());
+            default:;
+        }
         if (type_py == STRING && (b.type_py == INT || b.type_py == BOOL)) {
             Object tmp(*this);
             auto num = b.toINT();
-            for(BigInt i = 1; i < num; ++i)
+            for (BigInt i = 1; i < num; ++i)
                 tmp += *this;
             return tmp;
         }
