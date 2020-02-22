@@ -93,6 +93,7 @@ BigInt operator-(const BigInt &a, const BigInt &b) {
     if (tmp == 0) {
         ans.sgn = true;
         while (!ans.val.empty() && ans.val.back() == 0) ans.val.pop_back();
+        if (ans.val.empty()) ans.val.push_back(0);
         return ans;
     } else {
 //        ans.sgn = false;
@@ -147,10 +148,12 @@ bool operator<=(const BigInt &a, const BigInt &b) {
     return !(a>b);
 }
 bool operator==(const BigInt &a, const BigInt &b) {
+    if ((a.val.size() == 1 && a.val[0] == 0) && (b.val.size() == 1 && b.val[0] == 0))
+        return true;
     return !(a > b) && !(a < b);
 }
 bool operator!=(const BigInt &a, const BigInt &b) {
-    return a > b || a < b;
+    return !(a == b);
 }
 BigInt& BigInt::operator+=(const BigInt &b) {
     *this = *this + b;

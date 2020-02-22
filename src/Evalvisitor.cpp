@@ -12,7 +12,6 @@ antlrcpp::Any EvalVisitor::visitFile_input(Python3Parser::File_inputContext *ctx
 antlrcpp::Any EvalVisitor::visitFuncdef(Python3Parser::FuncdefContext *ctx) {
     string name = ctx->NAME()->toString();
     auto visitresult = visit(ctx->parameters());
-    bool testresult = visitresult.is<Function::Para>();
     auto _suite = ctx->suite();
     Function func(visitresult.as<Function::Para>(), _suite);
     Funcs.insert({name, func});
@@ -125,7 +124,9 @@ antlrcpp::Any EvalVisitor::visitIf_stmt(Python3Parser::If_stmtContext *ctx) {
         if (visit(tests[i]).as<Object>().toBOOL())
             return visit(suites[i]);
     }
-    if (ctx->ELSE()) return visit(suites.back());
+    if (ctx->ELSE() != nullptr)
+        return visit(suites.back());
+    return Object();
 }
 antlrcpp::Any EvalVisitor::visitWhile_stmt(Python3Parser::While_stmtContext *ctx) {
     while (visit(ctx->test()).as<Object>().toBOOL()) {
