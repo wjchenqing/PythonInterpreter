@@ -103,7 +103,9 @@ antlrcpp::Any EvalVisitor::visitContinue_stmt(Python3Parser::Continue_stmtContex
     return Object(CONTINUE);
 }
 antlrcpp::Any EvalVisitor::visitReturn_stmt(Python3Parser::Return_stmtContext *ctx) {
-    if (ctx->testlist() == nullptr) return Object(RETURN);
+    if (ctx->testlist() == nullptr){
+        return Object(RETURN);
+    }
     Object cur = visit(ctx->testlist()).as<Object>();
     if (cur.list_py.size() == 1) {
         Object tmp = cur.list_py[0];
@@ -273,7 +275,6 @@ antlrcpp::Any EvalVisitor::visitAtom_expr(Python3Parser::Atom_exprContext *ctx) 
     if (tmp != Funcs.end()) {
         auto &function = tmp->second;
         Ob_Map o_tmp;
-        std::string test = function.paras[0].first;
         if (ctx->trailer()->arglist() != nullptr) {
             auto arguments = ctx->trailer()->arglist()->argument();
             int num = arguments.size();
