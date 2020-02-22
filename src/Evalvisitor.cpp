@@ -160,7 +160,7 @@ antlrcpp::Any EvalVisitor::visitAnd_test(Python3Parser::And_testContext *ctx) {
     auto not_tests = ctx->not_test();
     if (!ctx->AND(0)) return visit(not_tests[0]);
     int num = 0;
-    while (num < ctx->AND().size()) {
+    while (num <= ctx->AND().size()) {
         if (!visit(not_tests[num++]).as<Object>().toBOOL())
             return Object(false);
     }
