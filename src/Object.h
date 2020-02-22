@@ -160,6 +160,7 @@ public:
                     return Object(toINT() * b.toINT());
                 else if (b.type_py == FLOAT)
                     return Object(toFLOAT() * b.toFLOAT());
+                break;
             case FLOAT:
                 return Object(toFLOAT() * b.toFLOAT());
             default:;
@@ -183,6 +184,12 @@ public:
             return toINT() / b.toINT();
         if (type_py == FLOAT && b.type_py == FLOAT)
             return BigInt((long long)(toFLOAT() / b.toFLOAT()));
+    }
+    Object intdivAugAssign(const Object &b) {
+        if (type_py == INT && b.type_py == INT)
+            return *this = toINT() / b.toINT();
+        if (type_py == FLOAT && b.type_py == FLOAT)
+            return *this = BigInt((long long)(toFLOAT() / b.toFLOAT()));
     }
     Object operator% (const Object &b) const {
         if (type_py == INT && b.type_py == INT)

@@ -87,7 +87,7 @@ antlrcpp::Any EvalVisitor::visitExpr_stmt(Python3Parser::Expr_stmtContext *ctx) 
         former %= latter;
         return former;
     }
-    if (sign->IDIV_ASSIGN()) return former.intdiv(latter);
+    if (sign->IDIV_ASSIGN()) return former.intdivAugAssign(latter);
 }
 antlrcpp::Any EvalVisitor::visitAugassign(Python3Parser::AugassignContext *ctx) {
     return visitChildren(ctx);
@@ -161,7 +161,7 @@ antlrcpp::Any EvalVisitor::visitAnd_test(Python3Parser::And_testContext *ctx) {
     if (!ctx->AND(0)) return visit(not_tests[0]);
     int num = 0;
     while (num < ctx->AND().size()) {
-        if (!visit(not_tests[num]).as<Object>().toBOOL())
+        if (!visit(not_tests[num++]).as<Object>().toBOOL())
             return Object(false);
     }
     return Object(true);
@@ -343,10 +343,12 @@ antlrcpp::Any EvalVisitor::visitTestlist(Python3Parser::TestlistContext *ctx) {
 antlrcpp::Any EvalVisitor::visitArglist(Python3Parser::ArglistContext *ctx) {
     auto arguments = ctx->argument();
     List cur;
-    for (auto & argument : arguments)
-    cur.push_back(visit(argument).as<Object>());
-    if (cur.size()==1 && cur[0].type_py == LIST) return cur[0];
-    return  Object(cur);
+    for (auto &argument : arguments) {
+        auto visitResult = visit(argument);
+        cur.push_back(visitResult.as<Object>());
+    }
+    if (cur.size() == 1 && cur[0].type_py == LIST) return cur[0];
+    return Object(cur);
 }
 antlrcpp::Any EvalVisitor::visitArgument(Python3Parser::ArgumentContext *ctx) {
     return visit(ctx->test());
