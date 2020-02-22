@@ -123,7 +123,12 @@ public:
     Object operator+(const Object &b) const {
         switch (type_py) {
             case INT:
-                if (b.type_py == INT)
+                if (b.type_py == INT || b.type_py == BOOL)
+                    return Object(toINT() + b.toINT());
+                else
+                    return Object(toFLOAT() + b.toFLOAT());
+            case BOOL:
+                if (b.type_py == INT || b.type_py == BOOL)
                     return Object(toINT() + b.toINT());
                 else
                     return Object(toFLOAT() + b.toFLOAT());
@@ -156,7 +161,7 @@ public:
     Object operator*(const Object &b) const {
         switch (type_py) {
             case INT:
-                if (b.type_py == INT)
+                if (b.type_py == INT || b.type_py == BOOL)
                     return Object(toINT() * b.toINT());
                 else if (b.type_py == FLOAT)
                     return Object(toFLOAT() * b.toFLOAT());
@@ -174,6 +179,8 @@ public:
         }
         if ((type_py == INT || type_py == BOOL) && b.type_py == STRING)
             return b * *this;
+        if (type_py == BOOL)
+            return toINT() * b.toINT();
     }
     Object operator/(const Object &b) const {
         if (type_py == INT || type_py == FLOAT)
